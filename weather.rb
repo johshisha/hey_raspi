@@ -10,6 +10,7 @@ class Weather
     secret = YAML.load_file(args[:secret])
     @API_KEY = secret['API_KEY']
     @BASE_URL = secret['BASE_URL']
+    @CITY_ID = secret['CITY_ID']
   end
 
   # judge weather whether rainy or not
@@ -44,14 +45,14 @@ class Weather
 
   # get 1day weather from args time
   def get_1day_weather(month, day, hour)
-    response = open(@BASE_URL + "?q=Hirakata-shi,jp&APPID=#{@API_KEY}")
+    response = open(@BASE_URL + "?id=#{@CITY_ID}&APPID=#{@API_KEY}")
     result = JSON.parse(response.read)
 
     weathers = []
     result['list'].each do |l|
       t = Time.parse(l['dt_txt'])
       if t.day == day && t.hour >= hour # get weathers from previous priod
-        p l['weather'][0]['main']  # there are three types of weather('Clear', 'Clouds', 'Rain')
+        # p l['weather'][0]['main']  # there are three types of weather('Clear', 'Clouds', 'Rain')
         weathers.push(l['weather'][0]['main'])
       end
     end
@@ -69,4 +70,16 @@ class Weather
     weathers = get_1day_weather(month, day, hour)
     judge_weather(weathers)
   end
+
+  def get_city_info
+    response = open(@BASE_URL + "?id=#{@CITY_ID}&APPID=#{@API_KEY}")
+    result = JSON.parse(response.read)
+    result['city']
+  end
+end
+
+if __FILE__ == $0
+  weather = Weather.new
+  city = weather.get_city_info
+  p city
 end
